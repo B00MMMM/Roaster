@@ -1,38 +1,51 @@
 const axios = require('axios');
 
-const HF_API_URL = (model) => `https://api-inference.huggingface.co/models/${model}`;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-async function generateWithHF(model, apiKey, prompt, timeout = 10000) {
+async function generateWithGroq(model, apiKey, prompt, timeout = 10000) {
   try {
+    console.log(`📡 Sending request to Groq API with model: ${model}`);
     const res = await axios.post(
-      HF_API_URL(model),
-      { inputs: prompt, options: { wait_for_model: true } },
+      GROQ_API_URL,
       {
-        headers: { Authorization: `Bearer ${apiKey}` },
+        model, // Use the passed model
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 50,
+        temperature: 0.9
+      },
+      {
+        headers: { 
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
         timeout
       }
     );
 
-    // Response shape differs by model. Commonly res.data is string or object.
-    if (!res.data) return null;
-
-    // Many HF text-generation responses include a plain string:
-    if (typeof res.data === 'string') return res.data;
-
-    // Some models return array with generated_text or text field:
-    if (Array.isArray(res.data) && res.data[0]?.generated_text) {
-      return res.data[0].generated_text;
+    if (res.data?.choices?.[0]?.message?.content) {
+      const content = res.data.choices[0].message.content.trim();
+      console.log(`📥 Groq API response: "${content}"`);
+      return content;
     }
-    if (res.data.generated_text) return res.data.generated_text;
-    if (res.data[0]?.text) return res.data[0].text;
-
-    // As a fallback, stringify
-    return typeof res.data === 'object' ? JSON.stringify(res.data) : String(res.data);
+    
+    console.log('⚠️ No valid content in Groq response:', res.data);
+    return null;
   } catch (err) {
-    // bubble up error to let caller fallback
-    // console.error('HF error:', err?.response?.data || err.message);
+    console.error(`❌ Groq API error: ${err.message}`, {
+      status: err.response?.status,
+      data: err.response?.data
+    });
     throw err;
   }
 }
 
-module.exports = { generateWithHF };
+async function generateWithHF(model, apiKey, prompt, timeout = 10000) {
+  return generateWithGroq(model, apiKey, prompt, timeout);
+}
+
+module.exports = { generateWithHF, generateWithGroq };

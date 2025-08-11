@@ -1,5 +1,6 @@
-require('dotenv').config();
 const express = require('express');
+const path = require('path');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -26,11 +27,21 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('Mongo connect error', err));
 
+// API routes
 app.use('/api/roast', roastRoutes);
 app.use('/api', feedRoutes);
 app.use('/api/test', testRoutes);
 
-// health
-app.get('/', (req, res) => res.send('AI Roast Machine backend OK'));
+// Serve static files from frontend build (for production)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  });
+} else {
+  // Development health check
+  app.get('/', (req, res) => res.send('AI Roast Machine backend OK - Development Mode'));
+}
 
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "build": "cd frontend && npm install && npm run build",
-    "install-deps": "cd backend && npm install && cd ../frontend && npm install"
+    "build": "npm run install-frontend && npm run build-frontend",
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "install-deps": "npm run install-backend && npm run install-frontend",
+    "build-frontend": "cd frontend && npx vite build"
   },
   "keywords": ["ai", "roast", "generator", "mongodb", "groq"],
   "author": "Your Name",

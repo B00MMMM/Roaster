@@ -15,7 +15,10 @@ const localFallbackRoasts = [
 
 // Craft different prompts based on mode
 function craftPrompt(name, mode) {
-const basePrompts = {
+  // Normalize mode to capitalize first letter
+  const normalizedMode = mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+  
+  const basePrompts = {
     Savage: `Create a 1 line, savage roast for someone named ${name}. Make it witty, clever, and brutal and cruel. MAXIMUM 1 line only. Use modern slang and make it sting. Be concise and punchy.`,
     Friendly: `Create a 1 line, friendly, light-hearted roast for someone named ${name}. Make it funny and teasing but warm and affectionate. Like something you'd say to your best friend. MAXIMUM 1 line only. Be concise and sweet.`,
     Professional: `Create a 1 line, professional but humorous roast for someone named ${name}. Make it workplace-appropriate, clever, and funny. Think office banter that's witty but respectful. MAXIMUM 1 line only. Be concise and professional.`,
@@ -24,9 +27,11 @@ const basePrompts = {
     Gentle: `Create a 1 line, gentle roast for someone named ${name}. Make it soft, playful, and harmless — like a friendly tease that still gets a laugh. MAXIMUM 1 line only. Be concise and kind.`,
     Epic: `Create a 1 line, epic roast for someone named ${name}. Make it grand, over-the-top, and dramatic — like an insult from a fantasy hero or epic poem. MAXIMUM 1 line only. Be concise but powerful.`,
     Classic: `Create a 1 line, classic roast for someone named ${name}. Make it timeless, old-school, and elegant — like something Oscar Wilde or Mark Twain might say. MAXIMUM 1 line only. Be concise and refined.`
-};
+  };
   
-  return basePrompts[mode] || basePrompts.savage;
+  const prompt = basePrompts[normalizedMode] || basePrompts.Savage;
+  console.log(`🎯 Generated prompt for mode '${mode}' (normalized: '${normalizedMode}'):`, prompt.substring(0, 100) + '...');
+  return prompt;
 }
 
 // Generate roast using Groq API
@@ -134,34 +139,45 @@ async function generateRoast(req, res) {
   const prompt = craftPrompt(name, mode);
   const model = process.env.AI_MODEL || 'mixtral-8x7b-32768';
   const apiKey = process.env.GROQ_API_KEY;
+  const backupApiKey = process.env.GROQ_API_KEY_BACKUP;
   const aiTimeout = Number(process.env.AI_TIMEOUT || 15000);
 
   console.log('🔧 Environment Variables:', {
     AI_MODEL: model,
     GROQ_API_KEY: apiKey ? `${apiKey.substring(0, 7)}...${apiKey.slice(-4)}` : 'undefined',
+    GROQ_API_KEY_BACKUP: backupApiKey ? `${backupApiKey.substring(0, 7)}...${backupApiKey.slice(-4)}` : 'undefined',
     AI_TIMEOUT: aiTimeout
   });
 
-  // Try AI generation first
-  if (apiKey) {
+  // Try AI generation with primary and backup keys
+  const apiKeysToTry = [apiKey, backupApiKey].filter(key => key && key.trim());
+  
+  for (let i = 0; i < apiKeysToTry.length; i++) {
+    const currentKey = apiKeysToTry[i];
+    const keyType = i === 0 ? 'primary' : 'backup';
+    
     try {
-      console.log(`🤖 Attempting AI generation with Groq model: ${model}`);
-      console.log(`📝 Prompt: ${prompt}`);
+      console.log(`🤖 Attempting AI generation with ${keyType} key using Groq model: ${model}`);
       
-      const aiText = await generateWithGroq(model, apiKey, prompt, aiTimeout);
-      console.log(`🎯 AI Response: "${aiText}"`);
+      const aiText = await generateWithGroq(model, currentKey, prompt, aiTimeout);
+      console.log(`🎯 AI Response from ${keyType} key: "${aiText}"`);
       console.log(`📏 AI Response length: ${aiText?.length || 0}`);
       
       if (aiText && aiText.trim().length > 10) {
         const roast = aiText.replace(/\{name\}/g, name).trim();
-        console.log(`✅ Using AI roast: "${roast}"`);
-        return res.json({ roast, source: 'ai' });
+        console.log(`✅ Using AI roast from ${keyType} key: "${roast}"`);
+        return res.json({ roast, source: `ai-${keyType}` });
       }
-      console.log(`❌ AI output too short, falling back to DB`);
+      console.log(`❌ AI output from ${keyType} key too short, trying next option`);
     } catch (err) {
-      console.error(`❌ AI failed: ${err.message}`);
+      console.error(`❌ AI failed with ${keyType} key: ${err.message}`);
+      if (i === apiKeysToTry.length - 1) {
+        console.log(`❌ All API keys failed, falling back to database`);
+      }
     }
-  } else {
+  }
+  
+  if (apiKeysToTry.length === 0) {
     console.log(`❌ No valid GROQ_API_KEY found, skipping AI generation`);
   }
 

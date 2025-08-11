@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { requestRoast } from '../services/api';
 import SpinningWheel from './SpinningWheel';
 
@@ -9,6 +9,9 @@ export default function RoastBox() {
   const [isWheelSpinning, setIsWheelSpinning] = useState(false);
   const [showRoast, setShowRoast] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
+  
+  // Ref for scrolling to the roast result
+  const roastResultRef = useRef(null);
 
   // Static categories for the wheel
   const categories = ['Savage', 'Friendly', 'Professional', 'Random', 'Witty', 'Gentle', 'Epic', 'Classic'];
@@ -35,6 +38,13 @@ export default function RoastBox() {
           setLoading(false);
           setTimeout(() => {
             setShowRoast(true);
+            // Scroll to the roast result after it appears
+            setTimeout(() => {
+              roastResultRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+              });
+            }, 200);
           }, 100);
         }, 500);
       } catch (err) {
@@ -146,7 +156,10 @@ export default function RoastBox() {
 
         {/* Roast Display */}
         {roast && (
-          <div className={`transition-all duration-700 transform ${showRoast ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+          <div 
+            ref={roastResultRef}
+            className={`transition-all duration-700 transform ${showRoast ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+          >
             <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-orange-500/30 backdrop-blur-sm shadow-2xl rounded-lg p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex gap-1">

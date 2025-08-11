@@ -6,3 +6,7 @@ const API = axios.create({
 export function requestRoast(name, mode = 'Gentle') {
   return API.post('/api/roast', { name, mode }).then(r => r.data);
 }
+
+export function submitFeedback(feedbackData) {
+  return API.post('/api/feedback', feedbackData).then(r => r.data);
+}

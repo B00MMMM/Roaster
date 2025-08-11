@@ -8,14 +8,13 @@ import './App.css';
 function App() {
   return (
     <Router>
-      <div className="App">
+      <div className="App min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <Navigation />
-        <main>
+        <main className="w-full">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            {/* 404 route - should be last */}
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="text-center">

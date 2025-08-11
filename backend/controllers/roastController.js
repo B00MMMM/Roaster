@@ -15,12 +15,16 @@ const localFallbackRoasts = [
 
 // Craft different prompts based on mode
 function craftPrompt(name, mode) {
-  const basePrompts = {
-    savage: `Create a short(max 1 line), savage but hilarious roast for someone named ${name}. Make it witty, clever, and brutally funny but not cruel. MAXIMUM 2 lines only. Use modern slang and make it sting but in a playful way. Be concise and punchy.`,
-    friendly: `Create a short(max 1 line), friendly, light-hearted roast for someone named ${name}. Make it funny and teasing but warm and affectionate. Like something you'd say to your best friend. MAXIMUM 2 lines only. Be concise and sweet.`,
-    professional: `Create a short(max 1 line), professional but humorous roast for someone named ${name}. Make it workplace-appropriate, clever, and funny. Think office banter that's witty but respectful. MAXIMUM 2 lines only. Be concise and professional.`,
-    random: `Create a short(max 1 line), completely random and absurd roast for someone named ${name}. Be weird, unexpected, and hilariously nonsensical. Make it so random it's funny. MAXIMUM 2 lines only. Be concise and weird.`
-  };
+const basePrompts = {
+    Savage: `Create a 1 line, savage roast for someone named ${name}. Make it witty, clever, and brutal and cruel. MAXIMUM 1 line only. Use modern slang and make it sting. Be concise and punchy.`,
+    Friendly: `Create a 1 line, friendly, light-hearted roast for someone named ${name}. Make it funny and teasing but warm and affectionate. Like something you'd say to your best friend. MAXIMUM 1 line only. Be concise and sweet.`,
+    Professional: `Create a 1 line, professional but humorous roast for someone named ${name}. Make it workplace-appropriate, clever, and funny. Think office banter that's witty but respectful. MAXIMUM 1 line only. Be concise and professional.`,
+    Random: `Create a 1 line, completely random and absurd roast for someone named ${name}. Be weird, unexpected, and hilariously nonsensical. Make it so random it's funny. MAXIMUM 2 lines only. Be concise and weird.`,
+    Witty: `Create a 1 line, razor-sharp witty roast for someone named ${name}. Make it clever, wordplay-driven, and smart — like a master of sarcasm would say. MAXIMUM 1 line only. Be concise and clever.`,
+    Gentle: `Create a 1 line, gentle roast for someone named ${name}. Make it soft, playful, and harmless — like a friendly tease that still gets a laugh. MAXIMUM 1 line only. Be concise and kind.`,
+    Epic: `Create a 1 line, epic roast for someone named ${name}. Make it grand, over-the-top, and dramatic — like an insult from a fantasy hero or epic poem. MAXIMUM 1 line only. Be concise but powerful.`,
+    Classic: `Create a 1 line, classic roast for someone named ${name}. Make it timeless, old-school, and elegant — like something Oscar Wilde or Mark Twain might say. MAXIMUM 1 line only. Be concise and refined.`
+};
   
   return basePrompts[mode] || basePrompts.savage;
 }

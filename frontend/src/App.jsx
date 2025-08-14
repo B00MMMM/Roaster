@@ -3,6 +3,7 @@ import Navigation from './components/Navigation';
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import AddPerson from './pages/AddPerson';
 import './App.css';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/add-person" element={<AddPerson />} />
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="text-center">

@@ -6,6 +6,8 @@ const cors = require('cors');
 const roastRoutes = require('./routes/roastRoutes');
 const feedRoutes = require('./routes/feedRoutes');
 const testRoutes = require('./routes/testRoutes');
+const authRoutes = require('./routes/authRoutes');
+const personRoutes = require('./routes/personRoutes');
 
 const app = express();
 app.use(cors());
@@ -29,6 +31,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api/roast', roastRoutes);
 app.use('/api', feedRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api', personRoutes);
 
 // health
 app.get('/', (req, res) => res.send('AI Roast Machine backend OK'));

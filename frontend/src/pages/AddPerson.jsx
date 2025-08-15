@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import AuthModal from "../components/AuthModal";
-import axios from "axios";
+import { getPersons, createPerson, updatePerson, deletePerson, getTraits } from "../services/api";
 import Swal from 'sweetalert2';
 
 export default function AddPerson() {
@@ -25,11 +25,11 @@ export default function AddPerson() {
 
   const loadData = useCallback(async () => {
     try {
-      const traitsResponse = await axios.get("http://localhost:5000/api/traits");
-      setTraits(traitsResponse.data);
+      const traitsData = await getTraits();
+      setTraits(traitsData);
       
-      const personsResponse = await axios.get("http://localhost:5000/api/persons");
-      setPersons(personsResponse.data);
+      const personsData = await getPersons();
+      setPersons(personsData);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -38,9 +38,6 @@ export default function AddPerson() {
   useEffect(() => {
     // Check if user is authenticated
     if (isAuthenticated && token) {
-      // Set up axios defaults for authenticated requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
       // Load traits and persons
       loadData();
       setShowWarning(false);
@@ -51,9 +48,6 @@ export default function AddPerson() {
       setShowWarning(true);
       setShowForm(false);
       setEditingPerson(null);
-      
-      // Clear axios auth header
-      delete axios.defaults.headers.common['Authorization'];
     }
   }, [isAuthenticated, token, loadData]);
 
@@ -76,10 +70,10 @@ export default function AddPerson() {
     try {
       if (editingPerson) {
         // Update existing person
-        await axios.put(`http://localhost:5000/api/persons/${editingPerson._id}`, formData);
+        await updatePerson(editingPerson._id, formData);
       } else {
         // Create new person
-        await axios.post("http://localhost:5000/api/persons", formData);
+        await createPerson(formData);
       }
       await loadData(); // Reload persons list
       setShowForm(false);
@@ -125,7 +119,7 @@ export default function AddPerson() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/persons/${personId}`);
+        await deletePerson(personId);
         await loadData(); // Reload persons list
         Swal.fire({
           title: 'Deleted!',
